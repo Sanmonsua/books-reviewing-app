@@ -20,10 +20,15 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
     if 'username' in session:
-        return render_template('books.html', username=session['username'])
+        if request.method == 'POST':
+            search = request.form.get('search')
+            books = db.execute(f"SELECT * FROM books WHERE CAST(year AS VARCHAR) LIKE '%{search}%' OR isbn LIKE '%{search}%' OR UPPER(title) LIKE UPPER('%{search}%') OR UPPER(author) LIKE UPPER('%{search}%')").fetchall()
+        else:
+            books = db.execute("SELECT title, author, year FROM books").fetchmany(30)
+        return render_template('books.html', username=session['username'], books=books)
     return redirect(url_for('signin'))
 
 @app.route("/signin", methods=['GET', 'POST'])
@@ -47,7 +52,7 @@ def signup():
         password = request.form.get('password')
         password_conf = request.form.get('password_conf')
         if password != password_conf:
-            errors.append('Passwords do not concuerd')
+            errors.append('Passwords do not match')
             return render_template('sign-up.html', errors=errors)
         if db.execute("SELECT * FROM users WHERE username = :username", {"username":username}).rowcount != 0:
             errors.append('User already exists')
@@ -57,3 +62,8 @@ def signup():
         session['username'] = username
         return redirect(url_for('index'))
     return render_template('sign-up.html', errors=errors)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))

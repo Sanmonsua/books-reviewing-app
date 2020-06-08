@@ -1,7 +1,54 @@
 {%extends "layout.html"%}
 {%block title%}
-  SBooks
+SBooks
 {%endblock%}
 {%block body%}
-  <h1>Welcome {{username}}</h1>
+<header>
+  <div class="navbar navbar-light bg-light shadow-sm">
+    <div class="container d-flex justify-content-between">
+      <a class="navbar-brand" href="{{url_for('index')}}">
+        <img src="{{url_for('static', filename='assets/sblogo.png')}}" width="60" height="60" alt="" loading="lazy">
+      </a>
+      <form class="form-inline col-6" action="{{url_for('index')}}" method="post">
+        <input name="search" style="background-color:#fff;" class="col-12 form-control searchbar text-center" type="text" placeholder="Search by title, author or ISBN" aria-label="Search">
+      </form>
+      <a href="{{url_for('logout')}}" class="btn btn-outline-danger">Logout</a>
+    </div>
+  </div>
+</header>
+
+<main role="main">
+
+  <div class="album py-5 bg-light">
+    <div class="container">
+
+      <div class="row">
+        {%for b in books%}
+        <div style="margin-top:10px" class="col-12 col-sm-6">
+          <div class="card">
+            <div class="card-body shadow-sm">
+              <h5 class="card-title">{{b.title}}</h5>
+              <h6 class="card-subtitle text-muted">by {{b.author}} ● {{b.year}}</h6>
+              <button style="margin-top:10px;" type="button" class="btn btn-round-lg btn-primary" name="button">Details</button>
+            </div>
+          </div>
+        </div>
+        {%else%}
+          <div class="col-12">
+            <h3 class="text-center">No book matches</h3>
+          </div>
+        {%endfor%}
+      </div>
+
+</main>
+
+<footer class="text-muted">
+  <div class="container">
+    <p class="float-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>Album example is &copy; Bootstrap, but please download and customize it for yourself!</p>
+    <p>New to Bootstrap? <a href="https://getbootstrap.com/">Visit the homepage</a> or read our <a href="../getting-started/introduction/">getting started guide</a>.</p>
+  </div>
+</footer>
 {%endblock%}
