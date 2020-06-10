@@ -24,8 +24,8 @@ SBooks
 
       <div class="row">
         {%for b in books%}
-        <div style="margin-top:10px" class="col-12 col-sm-6">
-          <div class="card">
+        <div style="margin-top:10px; " class="col-12 col-sm-6">
+          <div style="border-radius:15px;"class="card">
             <div class="card-body shadow-sm">
               <h5 class="card-title">{{b.title}}</h5>
               <h6 class="card-subtitle text-muted">by {{b.author}} ● {{b.year}}</h6>

@@ -70,11 +70,25 @@ def logout():
 
 @app.route('/<string:book_isbn>', methods=['POST', 'GET'])
 def book(book_isbn):
+    errors = []
     if db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).rowcount == 0:
         return 'Error 404: Not found', 404
     book = db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).fetchone()
+    if request.method == "POST":
+        try:
+            user_id = db.execute("SELECT id FROM users WHERE username = :username", {"username":session['username']}).fetchone().id
+            if db.execute("SELECT * FROM reviews WHERE user_id = :user_id AND book_id = :book_id", {"user_id":user_id, "book_id":book.id}).rowcount == 0:
+                rate = request.form.get('rate')
+                title = request.form.get('title')
+                opinion = request.form.get('opinion')
+                db.execute("INSERT INTO reviews (rate, opinion, user_id, book_id, title) VALUES (:rate, :opinion, :user_id, :book_id, :title)", {"rate":rate, "opinion":opinion, "user_id":user_id, "book_id":book.id, "title":title})
+                db.commit()
+            errors.append("Error: You already reviewed this book!")
+        except KeyError:
+            errors.append("Error: Empty fields")
     if db.execute("SELECT * FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).rowcount==0:
-        return render_template('book.html', book=book)
-    n_reviews = int(db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().count)
+        return render_template('book.html', book=book, errors=errors)
+    n_reviews = db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().count
     rating = round(float(db.execute("SELECT AVG(rate) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().avg), 2)
-    return render_template('book.html', book=book, n_reviews=n_reviews, rating=rating)
+    reviews = db.execute("SELECT reviews.rate, reviews.opinion, users.username, reviews.title FROM reviews INNER JOIN users ON reviews.user_id = users.id WHERE book_id = :book_id;", {"book_id":book.id}).fetchall()
+    return render_template('book.html', book=book, n_reviews=n_reviews, rating=rating, reviews=reviews, errors=errors)
