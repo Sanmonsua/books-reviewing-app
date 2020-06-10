@@ -1,6 +1,6 @@
-import os
+import os, requests
 
-from flask import Flask, session, request, render_template, redirect, url_for
+from flask import Flask, session, request, render_template, redirect, url_for, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -74,6 +74,7 @@ def book(book_isbn):
     if db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).rowcount == 0:
         return 'Error 404: Not found', 404
     book = db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).fetchone()
+    good_reads_rate = round(float(requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "E7Yw9FVYst3sIPplv6g", "isbns": book.isbn}).json()['books'][0]['average_rating']), 1)
     if request.method == "POST":
         try:
             user_id = db.execute("SELECT id FROM users WHERE username = :username", {"username":session['username']}).fetchone().id
@@ -87,8 +88,24 @@ def book(book_isbn):
         except KeyError:
             errors.append("Error: Empty fields")
     if db.execute("SELECT * FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).rowcount==0:
-        return render_template('book.html', book=book, errors=errors)
+        return render_template('book.html', book=book, errors=errors, good_reads_rate=good_reads_rate)
     n_reviews = db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().count
     rating = round(float(db.execute("SELECT AVG(rate) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().avg), 2)
     reviews = db.execute("SELECT reviews.rate, reviews.opinion, users.username, reviews.title FROM reviews INNER JOIN users ON reviews.user_id = users.id WHERE book_id = :book_id;", {"book_id":book.id}).fetchall()
-    return render_template('book.html', book=book, n_reviews=n_reviews, rating=rating, reviews=reviews, errors=errors)
+    return render_template('book.html', book=book, n_reviews=n_reviews, rating=rating, reviews=reviews, errors=errors, good_reads_rate=good_reads_rate)
+
+@app.route('/api/<string:book_isbn>')
+def api(book_isbn):
+    if db.execute('SELECT * FROM books WHERE isbn = :book_isbn', {"book_isbn":book_isbn}).rowcount == 0:
+        return jsonify({"error": "Invalid isbn"}), 404
+    book = db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).fetchone()
+    n_reviews = db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().count
+    rating = round(float(db.execute("SELECT AVG(rate) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().avg), 2)
+    return jsonify({
+        'title': book.title,
+        'author': book.author,
+        'year': book.year,
+        'isbn': book.isbn,
+        'review_count': n_reviews,
+        'average_rating': rating
+    })
