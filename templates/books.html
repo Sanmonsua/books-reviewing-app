@@ -29,7 +29,7 @@ SBooks
             <div class="card-body shadow-sm">
               <h5 class="card-title">{{b.title}}</h5>
               <h6 class="card-subtitle text-muted">by {{b.author}} ● {{b.year}}</h6>
-              <button style="margin-top:10px;" type="button" class="btn btn-round-lg btn-primary" name="button">Details</button>
+              <a href="{{url_for('book', book_isbn=b.isbn)}}" style="margin-top:10px;" type="button" class="btn btn-round-lg btn-primary" name="button">Details</a>
             </div>
           </div>
         </div>

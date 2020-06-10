@@ -90,5 +90,23 @@ footer p {
 }
 
 .btn-round-lg{
-border-radius: 22.5px;
+  border-radius: 20px;
+  background-color: #36D1DC;
+  border-color: #36D1DC;
+}
+
+.btn-round-lg:hover{
+  background-color: #5B86E5;
+  border-color: #5B86E5;
+}
+
+.btn-review{
+  border-radius: 15px;
+  background-color: #7f7fd5;
+  border-color: #7f7fd5;
+}
+
+.btn-review:hover{
+  background-color: #91eae4;
+  border-color: #91eae4;
 }

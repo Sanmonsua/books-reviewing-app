@@ -27,7 +27,7 @@ def index():
             search = request.form.get('search')
             books = db.execute(f"SELECT * FROM books WHERE CAST(year AS VARCHAR) LIKE '%{search}%' OR isbn LIKE '%{search}%' OR UPPER(title) LIKE UPPER('%{search}%') OR UPPER(author) LIKE UPPER('%{search}%')").fetchall()
         else:
-            books = db.execute("SELECT title, author, year FROM books").fetchmany(30)
+            books = db.execute("SELECT * FROM books").fetchmany(30)
         return render_template('books.html', username=session['username'], books=books)
     return redirect(url_for('signin'))
 
@@ -67,3 +67,14 @@ def signup():
 def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
+
+@app.route('/<string:book_isbn>', methods=['POST', 'GET'])
+def book(book_isbn):
+    if db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).rowcount == 0:
+        return 'Error 404: Not found', 404
+    book = db.execute("SELECT * FROM books WHERE isbn = :book_isbn", {"book_isbn":book_isbn}).fetchone()
+    if db.execute("SELECT * FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).rowcount==0:
+        return render_template('book.html', book=book)
+    n_reviews = int(db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().count)
+    rating = round(float(db.execute("SELECT AVG(rate) FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).fetchone().avg), 2)
+    return render_template('book.html', book=book, n_reviews=n_reviews, rating=rating)
