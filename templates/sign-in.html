@@ -1,6 +1,6 @@
 {%extends "layout.html"%}
 {%block title%}
-Sign-In
+ SBooks • Sign-In
 {%endblock%}
 {%block body%}
 <div class="signin text-center" style="height:100%;">
@@ -11,8 +11,8 @@ Sign-In
       <input name="username" type="text" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
       <label for="inputPassword" class="sr-only">Password</label>
       <input name="password" style="margin-bottom: 10px;" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-      <button style="margin-bottom: 10px;"class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-      <a href="{{url_for('signup')}}">Not registered? Create an account</a>
+      <button style="margin-bottom: 10px;"class="btn btn-lg btn-primary button btn-block" type="submit"><strong>Sign in</strong></button>
+      <a class="links"href="{{url_for('signup')}}">Not registered? Create an account</a>
       {%for e in errors%}
         <div style="margin-top:20px;"class="alert alert-danger" role="alert">
           {{e}}

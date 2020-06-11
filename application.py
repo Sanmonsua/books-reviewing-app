@@ -19,17 +19,30 @@ Session(app)
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
+books_all = db.execute("SELECT * FROM books").fetchmany(100)
+quantity = 30
+counter = 0
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    load = True
     if 'username' in session:
         if request.method == 'POST':
             search = request.form.get('search')
-            books = db.execute(f"SELECT * FROM books WHERE CAST(year AS VARCHAR) LIKE '%{search}%' OR isbn LIKE '%{search}%' OR UPPER(title) LIKE UPPER('%{search}%') OR UPPER(author) LIKE UPPER('%{search}%')").fetchall()
-        else:
-            books = db.execute("SELECT * FROM books").fetchmany(30)
-        return render_template('books.html', username=session['username'], books=books)
+            books_search = db.execute(f"SELECT * FROM books WHERE CAST(year AS VARCHAR) LIKE '%{search}%' OR isbn LIKE '%{search}%' OR UPPER(title) LIKE UPPER('%{search}%') OR UPPER(author) LIKE UPPER('%{search}%')").fetchall()
+            return render_template('books.html', username=session['username'], books=books_search)
+        if counter+quantity > len(books_all):
+            books = books_all[counter:]
+            load = False
+        books = books_all[counter:counter+quantity]
+        return render_template('books.html', username=session['username'], books=books, load=load)
     return redirect(url_for('signin'))
+
+@app.route("/forward")
+def load():
+    global counter, quantity
+    counter += quantity
+    return redirect(url_for('index'))
 
 @app.route("/signin", methods=['GET', 'POST'])
 def signin():
@@ -43,6 +56,7 @@ def signin():
         session['username'] = username
         return redirect(url_for('index'))
     return render_template('sign-in.html', errors=errors)
+
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def signup():
@@ -63,10 +77,12 @@ def signup():
         return redirect(url_for('index'))
     return render_template('sign-up.html', errors=errors)
 
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
+
 
 @app.route('/<string:book_isbn>', methods=['POST', 'GET'])
 def book(book_isbn):
@@ -84,7 +100,8 @@ def book(book_isbn):
                 opinion = request.form.get('opinion')
                 db.execute("INSERT INTO reviews (rate, opinion, user_id, book_id, title) VALUES (:rate, :opinion, :user_id, :book_id, :title)", {"rate":rate, "opinion":opinion, "user_id":user_id, "book_id":book.id, "title":title})
                 db.commit()
-            errors.append("Error: You already reviewed this book!")
+            else:
+                errors.append("Error: You already reviewed this book!")
         except KeyError:
             errors.append("Error: Empty fields")
     if db.execute("SELECT * FROM reviews WHERE book_id = :book_id", {"book_id":book.id}).rowcount==0:

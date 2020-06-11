@@ -1,6 +1,6 @@
 {%extends "layout.html"%}
 {%block title%}
-Book detail
+  Sbooks • {{book.title}}
 {%endblock%}
 {%block body%}
 
@@ -11,7 +11,7 @@ Book detail
         <img src="{{url_for('static', filename='assets/sblogo.png')}}" width="60" height="60" alt="" loading="lazy">
       </a>
       <form class="form-inline col-6" action="{{url_for('index')}}" method="post">
-        <input name="search" style="background-color:#fff;" class="col-12 form-control searchbar text-center" type="text" placeholder="Search by title, author or ISBN" aria-label="Search">
+        <input name="search" class="form-field col-12 form-control searchbar text-center" type="text" placeholder="Search by title, author or ISBN" autocomplete="off" aria-label="Search">
       </form>
       <a href="{{url_for('logout')}}" class="btn btn-outline-danger">Logout</a>
     </div>
@@ -19,8 +19,8 @@ Book detail
 </header>
 
 <main role="main" class="bg-light">
-  <div class="container shadow-sm py-5 book-detail">
-    <div style="border-radius: 22.5px 22.5px 0px 0px; background: linear-gradient(to right, #7f7fd5, #86a8e7, #91eae4);" class="col-12 text-white py-5 container">
+  <div class="container shadow-sm py-5">
+    <div class="col-12 text-white py-5 container book-head">
       <h1 class="font-weight-bold">{{book.title}}</h1>
       <h5 style="color:#fefefe">{{book.author}} • {{book.year}} • {{book.isbn}}</h5>
       <h5><svg class="bi bi-star-fill" width="0.8em" height="0.8em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -30,15 +30,15 @@ Book detail
         {%if rating%}
           {{rating}} • {{good_reads_rate}} in goodreads.com • {{n_reviews}} reviews
         {%else%}
-          4.5 in goodreads.com • No reviews
+          {{good_reads_rate}} in goodreads.com • No reviews
         {%endif%}
       </h5>
     </div>
-    <div style="background-color:#fff; border-radius: 0px 0px 22.5px 22.5px;" class="container py-5">
+    <div class="container py-5 book-review">
       <h2>Make review</h2>
       <form class="py-4" action="{{url_for('book', book_isbn=book.isbn)}}" method="post">
         <div class="form-group">
-          <select style="border-radius: 15px 15px 15px 15px;" name="rate"class="form-control">
+          <select name="rate"class="bordered form-field form-control">
             <option value="" selected>Select your rating</option>
             <option value="5">5</option>
             <option value="4">4</option>
@@ -48,12 +48,12 @@ Book detail
           </select>
         </div>
         <div class="form-group">
-          <input style="border-radius: 15px 15px 15px 15px;" name="title" class="form-control" placeholder="Title your review" rows="3"></input>
+          <input autocomplete="off" name="title" class="bordered form-control form-field" placeholder="Title your review" rows="3"></input>
         </div>
         <div class="form-group">
-          <textarea style="border-radius: 15px 15px 15px 15px;" name="opinion" class="form-control" placeholder="Write your opinion" rows="3"></textarea>
+          <textarea name="opinion" class="bordered form-control form-field" placeholder="Write your opinion" rows="3"></textarea>
         </div>
-        <button type="submit" class="btn btn-block btn-review btn-primary"><strong>Review</strong></button>
+        <button type="submit" class="btn btn-block btn-review button btn-primary"><strong>Review</strong></button>
       </form>
       {%for e in errors%}
         <div style="margin-top:20px;"class="alert alert-danger" role="alert">
@@ -64,7 +64,7 @@ Book detail
         <hr>
         <div class="py-4">
           {%for r in reviews%}
-          <div style="border-radius: 15px; margin-bottom: 25px" class="card">
+          <div style="border:none" class="card review">
             <div style="background-color:#7f7fd5; border-radius: 15px 15px 0 0;" class="card-header text-white">
               <strong>
                 <h5 class="card-title">{{r.username}} • <svg class="bi bi-star-fill" width="0.8em" height="0.8em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -73,7 +73,7 @@ Book detail
                   </svg> {{r.rate}}</h5>
               </strong>
             </div>
-            <div class="card-body">
+            <div class="card-body bordered-bottom">
               <h5>{{r.title}}</h5>
               <p class="card-text">{{r.opinion}}</p>
             </div>
