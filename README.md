@@ -12,7 +12,7 @@ For this application, I have developed a Database to manage Users, Books and Rev
 
 This file loads the 5000 books into my database. It uses SQLAlchemy library to execute this operation.
 
-### application.py
+### main.py
 
 This is the Flask Application. It has the following routes:
 
