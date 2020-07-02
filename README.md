@@ -4,6 +4,10 @@
 
 In this project I have built an application about books reviews. Users are able to register and log-in at the beginning. Then, they can explore more than 5000 books, searching by title, author, year or ISBN. By clicking in a specific book, they will get data related to the book's reviews (other users reviews, number of reviews, average rating from the app and GoodReadsApi). There they can leave their review for others to see.
 
+![image](https://user-images.githubusercontent.com/38411225/86302202-a1796a00-bbcd-11ea-9178-30f00a4cdae8.png)
+![image](https://user-images.githubusercontent.com/38411225/86302181-945c7b00-bbcd-11ea-913d-5a3239d28cce.png)
+
+
 ### Database
 
 For this application, I have developed a Database to manage Users, Books and Reviews. I used Heroku free postgres plan. The users table consists on a username and a password columns. The books table saves information about title, author, release year and ISBN. The reviews table save information like user id, book id, title, opinion and rating.
